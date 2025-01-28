@@ -532,13 +532,6 @@ func benchSizes(f func(b *testing.B, n int)) func(*testing.B) {
 		0,
 		6,
 		12,
-		18,
-		24,
-		30,
-		64,
-		128,
-		256,
-		512,
 		1024,
 		2048,
 		4096,
@@ -547,6 +540,9 @@ func benchSizes(f func(b *testing.B, n int)) func(*testing.B) {
 		1 << 18,
 		1 << 20,
 		1 << 22,
+		1 << 23,
+		1 << 24,
+		1 << 25,
 	}
 
 	// Cases enabled by default. Set -mapbench for the remainder.
