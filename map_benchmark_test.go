@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -1191,4 +1192,53 @@ func BenchmarkMapSmallAccessMiss(b *testing.B) {
 	b.Run("Key=int32/Elem=int32", smallBenchSizes(benchmarkMapAccessMiss[int32, int32]))
 	b.Run("Key=int64/Elem=int64", smallBenchSizes(benchmarkMapAccessMiss[int64, int64]))
 	b.Run("Key=string/Elem=string", smallBenchSizes(benchmarkMapAccessMiss[string, string]))
+}
+
+var mapSink map[int]int
+
+func TestMemoryFootprint(t *testing.T) {
+	runtime.MemProfileRate = 1
+	for n := 0; n <= 500_000; n += 10_000 {
+		func(b *testing.B) {
+			m := make(map[int]int)
+			mapSink = m
+			for j := 0; j < n; j++ {
+				m[j] = 42
+			}
+		}(nil)
+		bytes := findMapMemory("TestMemoryFootprint.func1")
+		fmt.Println(n, bytes)
+	}
+}
+
+func findMapMemory(name string) int64 {
+	runtime.GC()
+	runtime.GC()
+	var p []runtime.MemProfileRecord
+	n, ok := runtime.MemProfile(nil, true)
+	for {
+		p = make([]runtime.MemProfileRecord, n+50)
+		n, ok = runtime.MemProfile(p, true)
+		if ok {
+			p = p[0:n]
+			break
+		}
+		// Profile grew; try again.
+	}
+
+	var totalBytes int64
+	for _, r := range p {
+		if r.AllocBytes-r.FreeBytes <= 0 {
+			continue
+		}
+		stk := r.Stack()
+		for _, addr := range stk {
+			f := runtime.FuncForPC(addr)
+			if f != nil && strings.Contains(f.Name(), name) {
+				totalBytes += (r.AllocBytes - r.FreeBytes)
+				break
+			}
+		}
+	}
+	return totalBytes
 }
