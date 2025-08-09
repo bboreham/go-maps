@@ -1211,15 +1211,11 @@ func findMapMemory(name string) int64 {
 	runtime.GC()
 	var p []runtime.MemProfileRecord
 	n, ok := runtime.MemProfile(nil, true)
-	for {
+	for !ok { // Try until profile fits in p
 		p = make([]runtime.MemProfileRecord, n+50)
 		n, ok = runtime.MemProfile(p, true)
-		if ok {
-			p = p[0:n]
-			break
 		}
-		// Profile grew; try again.
-	}
+	p = p[0:n]
 
 	var totalBytes int64
 	for _, r := range p {
