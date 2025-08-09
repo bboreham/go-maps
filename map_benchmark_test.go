@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
+	"maps"
 	"math/rand"
 	"runtime"
 	"slices"
@@ -1186,6 +1187,19 @@ func BenchmarkMapSmallAccessMiss(b *testing.B) {
 	b.Run("Key=int32/Elem=int32", smallBenchSizes(benchmarkMapAccessMiss[int32, int32]))
 	b.Run("Key=int64/Elem=int64", smallBenchSizes(benchmarkMapAccessMiss[int64, int64]))
 	b.Run("Key=string/Elem=string", smallBenchSizes(benchmarkMapAccessMiss[string, string]))
+}
+
+var n map[int]int
+
+func BenchmarkMapClone(b *testing.B) {
+	var m = make(map[int]int)
+	for i := 0; i < 1000_000; i++ {
+		m[i] = i
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		n = maps.Clone(m)
+	}
 }
 
 var mapSink map[int]int
