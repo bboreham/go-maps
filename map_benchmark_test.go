@@ -924,7 +924,6 @@ func benchmarkMapAssignGrowLatency[K mapBenchmarkKeyType, E mapBenchmarkElemType
 	if n == 0 {
 		b.Skip("can't create empty map via assignment")
 	}
-	var initStart = time.Now()
 	checkAllocSize[K, E](b, n)
 	k := genValues[K](0, n)
 	e := genValues[E](0, n)
@@ -933,7 +932,7 @@ func benchmarkMapAssignGrowLatency[K mapBenchmarkKeyType, E mapBenchmarkElemType
 	// than a histogram provides higher precision. b.N tends to be <10M, so
 	// the memory requirement isn't too bad.
 	sample := make([]time.Duration, b.N)
-
+	var initTime = time.Now()
 	b.ResetTimer()
 
 	var m map[K]E
@@ -941,9 +940,9 @@ func benchmarkMapAssignGrowLatency[K mapBenchmarkKeyType, E mapBenchmarkElemType
 		if i%n == 0 {
 			m = make(map[K]E)
 		}
-		start := time.Since(initStart)
+		start := time.Since(initTime)
 		m[k[i%n]] = e[i%n]
-		end := time.Since(initStart)
+		end := time.Since(initTime)
 		sample[i] = end - start
 	}
 
