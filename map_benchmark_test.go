@@ -388,14 +388,14 @@ func BenchmarkSmallKeyMap(b *testing.B) {
 
 func BenchmarkMapPopulate(b *testing.B) {
 	benchSizes(func(b *testing.B, size int) {
-			b.ReportAllocs()
+		b.ReportAllocs()
 		m := make(map[int64]int64)
-			for i := 0; i < b.N; i++ {
+		for i := 0; i < b.N; i++ {
 			clear(m)
 			for j := int64(0); j < int64(size); j++ {
 				m[j] = 42
-				}
 			}
+		}
 	})(b)
 }
 
@@ -1214,7 +1214,7 @@ func findMapMemory(name string) int64 {
 	for !ok { // Try until profile fits in p
 		p = make([]runtime.MemProfileRecord, n+50)
 		n, ok = runtime.MemProfile(p, true)
-		}
+	}
 	p = p[0:n]
 
 	var totalBytes int64
